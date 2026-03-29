@@ -111,7 +111,7 @@ const WipBanner = () => {
                 - mb-6: 24px margin below, creating space before the button
                 - text-center: centers the text to match the centered title above */}
             <p className="text-white/50 text-sm leading-relaxed mb-6 text-center">
-              This site is actively being built. All text, values, and content
+              This site is actively being built. All text, values, Project Cards, and content
               will be updated after website framework is finished.
             </p>
 
