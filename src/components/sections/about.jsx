@@ -83,13 +83,13 @@ const About = () => {
             </FadeIn>
 
             <FadeIn delay={400}>
-              <button
+              {/* <button
                 onClick={() => window.open(Personal_info.resume, "_blank")}
                 className="inline-flex items-center gap-3 bg-[#C9A84C] hover:bg-[#d4b05a] hover:scale-102 text-black rounded-full px-8 py-4 text-base font-mono transition-all duration-300 w-fit"
               >
                 <Download className="w-4 h-4" />
                 Temporary
-              </button>
+              </button> */}
             </FadeIn>
           </div>
 
