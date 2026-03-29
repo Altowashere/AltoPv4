@@ -1,10 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { projects, categories } from "../../data/projects";
 import {
   Briefcase,
-  Sparkles,
   Target,
-  Globe,
   Palette,
   Cloud,
   Zap,
@@ -17,6 +15,8 @@ import FadeIn from "../animations/fadein";
 const Projects = () => {
   const [activeCategory, SetActiveCategory] = useState("All");
   const [currentIndex, setCurrentIndex] = useState(0);
+  // Match the carousel math to the responsive layout so mobile slides travel the correct distance.
+  const [cardsPerView, setCardsPerView] = useState(3);
 
   // The card being slid in during animation — null when idle.
   // We render 4 cards total during a transition (3 visible + 1 entering/exiting),
@@ -38,6 +38,8 @@ const Projects = () => {
 
   // Ref for the overflow-hidden wrapper — used to measure width for step distance.
   const containerRef = useRef(null);
+  // Remember the first touch point so horizontal swipes can move the carousel on phones.
+  const touchStartX = useRef(null);
 
   // Prevents clicks while a slide animation is in progress.
   const isAnimating = useRef(false);
@@ -46,6 +48,35 @@ const Projects = () => {
     activeCategory === "All"
       ? projects
       : projects.filter((project) => project.category === activeCategory);
+
+  useEffect(() => {
+    // Keep the JS carousel behavior in sync with the Tailwind breakpoints used by each card.
+    const updateCardsPerView = () => {
+      if (window.innerWidth >= 1024) {
+        setCardsPerView(3);
+        return;
+      }
+
+      if (window.innerWidth >= 768) {
+        setCardsPerView(2);
+        return;
+      }
+
+      setCardsPerView(1);
+    };
+
+    updateCardsPerView();
+    window.addEventListener("resize", updateCardsPerView);
+
+    return () => window.removeEventListener("resize", updateCardsPerView);
+  }, []);
+
+  useEffect(() => {
+    // A resize or category change can shorten the list, so reset to a safe index when needed.
+    if (currentIndex >= filteredProjects.length) {
+      setCurrentIndex(0);
+    }
+  }, [currentIndex, filteredProjects.length]);
 
   // Reset carousel when Category changes
   const HandleCategoryChange = (category) => {
@@ -58,16 +89,16 @@ const Projects = () => {
   };
 
   // Only loop when there are more than 3 projects
-  const shouldLoop = filteredProjects.length > 3;
+  const shouldLoop = filteredProjects.length > cardsPerView;
 
   // Returns exactly 3 real projects based on currentIndex using modulo.
   // No cloning — always fresh real data so stale fields can never bleed through.
   const getVisibleProjects = () => {
     const len = filteredProjects.length;
     if (len === 0) return [];
-    if (len <= 3) return filteredProjects;
-    return [0, 1, 2].map(
-      (offset) => filteredProjects[(currentIndex + offset) % len],
+    if (len <= cardsPerView) return filteredProjects;
+    return Array.from({ length: cardsPerView }, (_, offset) =>
+      filteredProjects[(currentIndex + offset) % len],
     );
   };
 
@@ -84,7 +115,9 @@ const Projects = () => {
   // With 3 cards in a container of width W and gap-6 (24px each gap):
   // cardWidth = (W - 2*24) / 3, step = cardWidth + 24 = (W + 24) / 3
   const getStep = () =>
-    containerRef.current ? (containerRef.current.offsetWidth + 24) / 3 : 400;
+    containerRef.current
+      ? (containerRef.current.offsetWidth + 24) / cardsPerView
+      : 400;
 
   const animate = (indexUpdater, dir) => {
     if (isAnimating.current) return;
@@ -96,7 +129,7 @@ const Projects = () => {
     if (dir === 1) {
       // NEXT: add the incoming card to the right → [A, B, C, D]
       // Row starts at slideX=0 showing [A,B,C], then slides left to show [B,C,D].
-      const newCard = filteredProjects[(currentIndex + 3) % len];
+      const newCard = filteredProjects[(currentIndex + cardsPerView) % len];
       setExtraCard(newCard);
       setExtraSide("right");
       setSlideX(0);
@@ -166,6 +199,29 @@ const Projects = () => {
     setSlideX(0);
   };
 
+  const handleTouchStart = (event) => {
+    // Track only the first touch so taps and swipes are easy to distinguish.
+    touchStartX.current = event.touches[0]?.clientX ?? null;
+  };
+
+  const handleTouchEnd = (event) => {
+    if (!shouldLoop || touchStartX.current === null) return;
+
+    const touchEndX = event.changedTouches[0]?.clientX ?? touchStartX.current;
+    const swipeDistance = touchStartX.current - touchEndX;
+    touchStartX.current = null;
+
+    // Ignore short gestures so vertical scrolling does not accidentally trigger a slide.
+    if (Math.abs(swipeDistance) < 50) return;
+
+    if (swipeDistance > 0) {
+      nextSlide();
+      return;
+    }
+
+    prevSlide();
+  };
+
   // Category icon Mapping
   const categoryIcons = {
     All: Target,
@@ -203,36 +259,107 @@ const Projects = () => {
 
         {/* Category filter */}
         <FadeIn delay={100}>
-          <div className="flex flex-wrap justify-center gap-3 mb-16">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => HandleCategoryChange(category)}
-                className={`group relative px-6 py-3 rounded-full font-medium transition-all duration-300 ${
-                  activeCategory === category
-                    ? "text-white"
-                    : "text-white/60 hover:text-white"
-                }`}
-              >
-                <div
-                  className={`absolute inset-0 rounded-full transition-[background-color] duration-300 ${
-                    activeCategory === category
-                      ? "border hover:border-white/10 bg-[#C9A84C]/10 opacity-100"
-                      : "bg-white/5  group-hover:bg-white/10"
-                  }`}
-                />
-                <div className="relative flex items-center gap-2">
-                  {React.createElement(categoryIcons[category], {
-                    className: "w-4 h-4",
-                  })}
-                  <span className="text-sm">{category}</span>
-                </div>
+          <div className="mb-16">
+            {/* Mobile uses two explicit rows so "All" stays centered above the other three filters. */}
+            <div className="flex justify-center sm:hidden mb-3">
+              {categories
+                .filter((category) => category === "All")
+                .map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => HandleCategoryChange(category)}
+                    className={`group relative w-full max-w-[calc((100%-1.5rem)/3)] px-4 py-3 rounded-full font-medium transition-all duration-300 ${
+                      activeCategory === category
+                        ? "text-white"
+                        : "text-white/60 hover:text-white"
+                    }`}
+                  >
+                    <div
+                      className={`absolute inset-0 rounded-full transition-[background-color] duration-300 ${
+                        activeCategory === category
+                          ? "border hover:border-white/10 bg-[#C9A84C]/10 opacity-100"
+                          : "bg-white/5 group-hover:bg-white/10"
+                      }`}
+                    />
+                    <div className="relative flex items-center gap-2">
+                      {React.createElement(categoryIcons[category], {
+                        className: "w-4 h-4",
+                      })}
+                      <span className="text-sm">{category}</span>
+                    </div>
 
-                {activeCategory === category && (
-                  <div className="absolute inset-0 rounded-full bg-[#C9A84C] blur-xl opacity-50 -z-10" />
-                )}
-              </button>
-            ))}
+                    {activeCategory === category && (
+                      <div className="absolute inset-0 rounded-full bg-[#C9A84C] blur-xl opacity-50 -z-10" />
+                    )}
+                  </button>
+                ))}
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 sm:hidden">
+              {categories
+                .filter((category) => category !== "All")
+                .map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => HandleCategoryChange(category)}
+                    className={`group relative w-full px-4 py-3 rounded-full font-medium transition-all duration-300 ${
+                      activeCategory === category
+                        ? "text-white"
+                        : "text-white/60 hover:text-white"
+                    }`}
+                  >
+                    <div
+                      className={`absolute inset-0 rounded-full transition-[background-color] duration-300 ${
+                        activeCategory === category
+                          ? "border hover:border-white/10 bg-[#C9A84C]/10 opacity-100"
+                          : "bg-white/5 group-hover:bg-white/10"
+                      }`}
+                    />
+                    <div className="relative flex items-center justify-center gap-2">
+                      {React.createElement(categoryIcons[category], {
+                        className: "w-4 h-4",
+                      })}
+                      <span className="text-sm">{category}</span>
+                    </div>
+
+                    {activeCategory === category && (
+                      <div className="absolute inset-0 rounded-full bg-[#C9A84C] blur-xl opacity-50 -z-10" />
+                    )}
+                  </button>
+                ))}
+            </div>
+
+            <div className="hidden sm:flex sm:flex-wrap sm:justify-center sm:gap-3">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => HandleCategoryChange(category)}
+                  className={`group relative px-6 py-3 rounded-full font-medium transition-all duration-300 ${
+                    activeCategory === category
+                      ? "text-white"
+                      : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  <div
+                    className={`absolute inset-0 rounded-full transition-[background-color] duration-300 ${
+                      activeCategory === category
+                        ? "border hover:border-white/10 bg-[#C9A84C]/10 opacity-100"
+                        : "bg-white/5 group-hover:bg-white/10"
+                    }`}
+                  />
+                  <div className="relative flex items-center gap-2">
+                    {React.createElement(categoryIcons[category], {
+                      className: "w-4 h-4",
+                    })}
+                    <span className="text-sm">{category}</span>
+                  </div>
+
+                  {activeCategory === category && (
+                    <div className="absolute inset-0 rounded-full bg-[#C9A84C] blur-xl opacity-50 -z-10" />
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
         </FadeIn>
 
@@ -241,7 +368,12 @@ const Projects = () => {
           <div className="relative mx-10 lg:mx-14">
             {/* overflow-hidden clips the 4-card row so only 3 are ever visible.
                 ref measures the container width to compute the slide step distance. */}
-            <div className="overflow-hidden" ref={containerRef}>
+            <div
+              className="overflow-hidden"
+              ref={containerRef}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
               {/* This is the row that physically moves during animation.
                   sliding toggles the CSS transition on/off so we can instant-reset
                   the starting position before each animation without a visible jump. */}
@@ -261,6 +393,7 @@ const Projects = () => {
                       key={project.id}
                       className="w-full md:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] shrink-0"
                     >
+                      {/* These widths stay untouched; cardsPerView above simply mirrors them for smoother movement. */}
                       <ProjectCard project={project} />
                     </div>
                   ))}
