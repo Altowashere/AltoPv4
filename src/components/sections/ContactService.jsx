@@ -24,8 +24,8 @@ const contacts = [
   {
     id: 3,
     label: "Twitter / X",
-    handle: "N/A",
-    description: "Not set up yet",
+    handle: "Altowashere",
+    description: "View some of my Projects on Twitter",
     icon: SiX,
     href: Social_links.twitter,
   },
