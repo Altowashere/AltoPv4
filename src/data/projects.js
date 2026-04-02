@@ -8,8 +8,8 @@ export const projects = [
     category: "Frontend",
     languages: ["Html", "Css"],
     metrics: null,
-    demoUrl: "https://altowashere.github.io/Portf/",
-    githubUrl: "https://github.com/Altowashere/Portf",
+    demoUrl: "https://altowashere.github.io/Portfolio-old-/",
+    githubUrl: "https://github.com/Altowashere/Portfolio-old-",
   },
   {
     id: 2,
