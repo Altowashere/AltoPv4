@@ -34,7 +34,7 @@ const Skills = () => {
       skills.find((s) => s.name === "C++"), // Intermediate
       skills.find((s) => s.name === "Git"),
       skills.find((s) => s.name === "React.js"), // Intermediate
-      skills.find((s) => s.name === "Luau"), // Beginner
+      skills.find((s) => s.name === "Lua"), // Beginner
       skills.find((s) => s.name === "Tailwind CSS"), // Beginner
     ].filter(Boolean),
   };

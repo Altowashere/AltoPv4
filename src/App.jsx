@@ -17,13 +17,13 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-black">
-      <WipBanner />
+      {/* <WipBanner />  Disabled for now ig */}
       <Navbar />
       <main>
         <LandingPage />
         <About />
         <Skills />
-        <Projects />
+        {/* <Projects /> */}
         <ServiceContainer />
         <ContactService />
       </main>
