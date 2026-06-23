@@ -21,10 +21,10 @@ export const Social_links = {
 };
 
 export const STATS = [
-  { label: "Years Coding", value: "2+" },
-  { label: "Programming Languages", value: "3+" },
-  { label: "Projects Completed", value: "5+" },
-  { label: "Public Projects", value: "5+" },
+  { label: "Years Coding", value: "4+" },
+  { label: "Programming Languages", value: "6+" },
+  { label: "Projects Completed", value: "12+" },
+  // { label: "Public Projects", value: "5+" },
 ];
 
 export const About_STATS = [
