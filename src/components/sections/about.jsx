@@ -5,10 +5,12 @@ import {
   SiPython,
   SiOpenjdk,
   SiLuau,
+  SiLua,
   SiCplusplus,
   SiJavascript,
   SiHtml5,
   SiTailwindcss,
+  SiTypescript,
 } from "react-icons/si";
 import { Personal_info, About_STATS } from "../../utils/constants";
 import FadeIn from "../animations/fadein";
@@ -16,12 +18,14 @@ import RadialGradientBackground from "../backgrounds/RadialGradientBackground";
 
 const About = () => {
   const skills = [
-    { name: "React.js", icon: SiReact, color: "#61DAFB" },
+    // { name: "React.js", icon: SiReact, color: "#61DAFB" },
+    { name: "Lua", icon: SiLua, color: "#000080" },
     { name: "Python", icon: SiPython, color: "#3776AB" },
+    { name: "TypeScript", icon: SiTypescript, color: "#3178C6" },
     { name: "Java", icon: SiOpenjdk, color: "#00A2FF" },
     { name: "C++", icon: SiCplusplus, color: "#00599C" },
     { name: "JavaScript", icon: SiJavascript, color: "#F7DF1E" },
-    { name: "Html", icon: SiHtml5, color: "#E34F26" },
+    // { name: "Html", icon: SiHtml5, color: "#E34F26" },
     // { name: "TailWindCss", icon: SiTailwindcss, color: "#06B6D4" },
   ];
 
@@ -47,8 +51,7 @@ const About = () => {
 
               <FadeIn delay={100}>
                 <h2 className="text-4xl lg:text-5xl font-normal text-white leading-tight">
-                  How I{" "}
-                  <span className="text-[#C9A84C]">work and build</span>
+                  How I <span className="text-[#C9A84C]">work and build</span>
                 </h2>
               </FadeIn>
 

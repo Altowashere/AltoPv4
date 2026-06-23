@@ -59,5 +59,12 @@ export default [
     level: "Intermediate",
     experience: null,
   },
+  {
+    id: 10,
+    name: "TypeScript",
+    icon: "Typescript",
+    level: "Beginner",
+    experience: null,
+  },
 ];
 
