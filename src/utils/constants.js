@@ -28,9 +28,9 @@ export const STATS = [
 ];
 
 export const About_STATS = [
-  { label: "Years Coding", value: "2+" },
-  { label: "Code Commits", value: "100+" },
-  { label: "Projects Completed", value: "5+" },
+  { label: "Years Coding", value: "4+" },
+  { label: "Code Commits", value: "2k+" },
+  { label: "Projects Completed", value: "12+" },
 ];
 
 export const NAV_LINKS = [
